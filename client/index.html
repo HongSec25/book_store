@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scorched Quarto</title>
+    <!-- Applies the saved/system theme before first paint, so there's no
+         flash of the wrong theme while React mounts and theme-context.jsx's
+         own effect runs. Keep this in sync with lib/theme-context.jsx. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("bookstore.theme");
+          var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <!-- Must stay a classic script, not type="module": PayWay's own script
+         relies on document.currentScript (always null for modules) and a
+         top-level `const AbaPayway` that must leak to the global scope
+         (module top-level bindings never do). type="module" also makes the
+         browser fetch it with CORS semantics, which PayWay's server doesn't
+         support (Access-Control-Allow-Origin missing) — that alone blocks
+         the script from loading at all.
+
+         Always production, even against a sandbox merchant: PayWay only
+         hosts checkout2-0.js on checkout.payway.com.kh — the sandbox domain
+         404s on this path. The SDK submits to whatever `form_url` we hand it
+         at call time (which does come from ABA_PAYWAY_BASE_URL, sandbox or
+         prod), so loading the script from prod doesn't lock you into hitting
+         prod's API. -->
+    <script src="https://checkout.payway.com.kh/plugins/checkout2-0.js" defer></script>
+  </body>
+</html>
