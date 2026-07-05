@@ -1,0 +1,94 @@
+CREATE TABLE IF NOT EXISTS authors (
+  id VARCHAR(64) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL UNIQUE,
+  bio TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS imprints (
+  id VARCHAR(64) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL UNIQUE,
+  color VARCHAR(16) NOT NULL,
+  blurb TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS genres (
+  id VARCHAR(64) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS collections (
+  id VARCHAR(64) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL UNIQUE,
+  description TEXT NOT NULL,
+  curatedBookIds JSON NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS books (
+  id VARCHAR(64) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL UNIQUE,
+  coverColor VARCHAR(16) NOT NULL,
+  imprintId VARCHAR(64) NOT NULL,
+  authorId VARCHAR(64) NOT NULL,
+  genreIds JSON NOT NULL,
+  collectionIds JSON NOT NULL,
+  publishDate DATE NOT NULL,
+  isNewRelease BOOLEAN NOT NULL DEFAULT FALSE,
+  isComingSoon BOOLEAN NOT NULL DEFAULT FALSE,
+  isBestseller BOOLEAN NOT NULL DEFAULT FALSE,
+  isCultClassic BOOLEAN NOT NULL DEFAULT FALSE,
+  synopsis TEXT NOT NULL,
+  pullQuote TEXT NULL,
+  formats JSON NOT NULL,
+  contentWarnings JSON NOT NULL,
+  isbn VARCHAR(32) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+  id VARCHAR(64) PRIMARY KEY,
+  customerUid VARCHAR(128) NOT NULL,
+  customerEmail VARCHAR(255) NOT NULL,
+  items JSON NOT NULL,
+  total DECIMAL(10, 2) NOT NULL,
+  shippingName VARCHAR(255) NOT NULL,
+  shippingAddress TEXT NOT NULL,
+  status VARCHAR(32) NOT NULL,
+  createdAt DATETIME(3) NOT NULL,
+  paymentTranId VARCHAR(255) NULL,
+  paymentStatus VARCHAR(32) NULL,
+  paymentQrImage MEDIUMTEXT NULL,
+  paymentDeeplink TEXT NULL,
+  channel VARCHAR(16) NOT NULL DEFAULT 'online',
+  INDEX idx_orders_customerUid (customerUid),
+  INDEX idx_orders_paymentTranId (paymentTranId)
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  uid VARCHAR(128) PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NULL,
+  phone VARCHAR(32) NULL,
+  province VARCHAR(64) NULL,
+  city VARCHAR(64) NULL,
+  addressDetail TEXT NULL,
+  role VARCHAR(32) NOT NULL,
+  disabled BOOLEAN NOT NULL DEFAULT FALSE,
+  createdAt DATETIME(3) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id VARCHAR(64) PRIMARY KEY,
+  actorUid VARCHAR(128) NOT NULL,
+  actorEmail VARCHAR(255) NOT NULL,
+  action VARCHAR(64) NOT NULL,
+  entityType VARCHAR(64) NOT NULL,
+  entityId VARCHAR(128) NOT NULL,
+  entityLabel VARCHAR(255) NOT NULL,
+  details JSON NOT NULL,
+  createdAt DATETIME(3) NOT NULL,
+  INDEX idx_audit_createdAt (createdAt)
+);
