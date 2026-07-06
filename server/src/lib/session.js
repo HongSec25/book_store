@@ -9,10 +9,14 @@ const SESSION_MAX_AGE_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
  * Express response — the direct replacement for Next's `cookies().set(...)`. */
 export async function setSessionCookie(res, idToken) {
   const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn: SESSION_MAX_AGE_MS });
+  // Client (Firebase Hosting) and API (Render) are different origins in
+  // production, so the cookie needs SameSite=None to be sent cross-site —
+  // that requires Secure, which is fine since both hosts are HTTPS-only.
+  const isProd = process.env.NODE_ENV === "production";
   res.cookie(SESSION_COOKIE, sessionCookie, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE_MS,
   });
