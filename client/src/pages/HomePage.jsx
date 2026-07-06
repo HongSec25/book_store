@@ -228,14 +228,14 @@ function TabbedCarousel({ tabs, coverMap, authors, imprints }) {
       onFocus={() => setIsPaused(true)}
       onBlur={() => setIsPaused(false)}
     >
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-2 border-b border-line/40">
-        <div className="flex flex-wrap gap-x-8 gap-y-2">
+      <div className="flex items-end justify-between gap-x-8 border-b border-line/40">
+        <div className="no-scrollbar flex gap-x-6 overflow-x-auto sm:flex-wrap sm:gap-x-8">
           {tabs.map((tab, i) => (
             <button
               key={tab.label}
               type="button"
               onClick={() => setActive(i)}
-              className={`pb-3 -mb-px border-b-2 font-mono text-xs uppercase tracking-wider whitespace-nowrap ${
+              className={`shrink-0 pb-3 -mb-px border-b-2 font-mono text-xs uppercase tracking-wider whitespace-nowrap ${
                 i === active ? "border-rust text-rust" : "border-transparent text-line hover:text-ink"
               }`}
             >
@@ -269,16 +269,17 @@ function TabbedCarousel({ tabs, coverMap, authors, imprints }) {
         <div
           ref={trackRef}
           onScroll={updateScrollState}
-          className="no-scrollbar flex gap-6 overflow-x-auto scroll-smooth pb-2"
+          className="no-scrollbar flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 sm:gap-6"
         >
           {current.books.map((book) => (
-            <BookCard
-              key={book.id}
-              book={book}
-              authors={authors}
-              imprints={imprints}
-              coverUrl={coverMap[book.slug]}
-            />
+            <div key={book.id} className="snap-start">
+              <BookCard
+                book={book}
+                authors={authors}
+                imprints={imprints}
+                coverUrl={coverMap[book.slug]}
+              />
+            </div>
           ))}
         </div>
         {canScrollLeft && (

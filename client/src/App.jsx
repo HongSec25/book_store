@@ -18,6 +18,7 @@ import CheckoutPage from "@/pages/checkout/CheckoutPage";
 import CheckoutSuccessPage from "@/pages/checkout/CheckoutSuccessPage";
 import CustomerLoginPage from "@/pages/account/CustomerLoginPage";
 import RegisterPage from "@/pages/account/RegisterPage";
+import ForgotPasswordPage from "@/pages/account/ForgotPasswordPage";
 import AccountLayout from "@/pages/account/AccountLayout";
 import AccountOverviewPage from "@/pages/account/AccountOverviewPage";
 import AccountOrdersPage from "@/pages/account/AccountOrdersPage";
@@ -65,6 +66,7 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/account/login" element={<CustomerLoginPage />} />
         <Route path="/account/register" element={<RegisterPage />} />
+        <Route path="/account/forgot-password" element={<ForgotPasswordPage loginPath="/account/login" />} />
         <Route
           path="/checkout"
           element={
@@ -98,6 +100,7 @@ function App() {
             </Suspense>
           }
         />
+        <Route path="/admin/forgot-password" element={<ForgotPasswordPage loginPath="/admin/login" />} />
         <Route
           path="/admin"
           element={

@@ -8,7 +8,7 @@ export default function BookCard({ book, rotate, coverUrl, authors = [], imprint
     // don't leave cards stranded left-aligned with empty space beside them).
     // Fixed w-40/shrink-0 (the default) is required for horizontal-scroll
     // carousels, where a card must keep its own width regardless of viewport.
-    return (<Link to={`/books/${book.slug}`} className={`group block focus:outline-none focus-visible:ring-2 focus-visible:ring-rust focus-visible:ring-offset-2 focus-visible:ring-offset-parchment rounded-sm ${fluid ? "w-full" : "w-40 shrink-0"}`}>
+    return (<Link to={`/books/${book.slug}`} className={`group block focus:outline-none focus-visible:ring-2 focus-visible:ring-rust focus-visible:ring-offset-2 focus-visible:ring-offset-parchment rounded-sm ${fluid ? "w-full" : "w-32 shrink-0 sm:w-40"}`}>
       <div className="relative aspect-2/3 overflow-hidden rounded-sm shadow-md transition-transform duration-200 group-hover:-translate-y-3 group-hover:shadow-xl" style={{
             transform: rotate ? `rotate(${rotate}deg)` : undefined,
         }}>
