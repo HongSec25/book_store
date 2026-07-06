@@ -23,13 +23,19 @@ function writeManifest(manifest) {
     ensureDir();
     fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
 }
+// updatedAt is appended as a cache-busting query param — the filename alone
+// doesn't change when a cover is re-uploaded, so without this, browsers keep
+// serving their previously cached image at that same URL indefinitely.
+function urlFor(entry) {
+    return `/covers/${entry.filename}?v=${encodeURIComponent(entry.updatedAt)}`;
+}
 export function getCoverUrl(slug) {
     const entry = readManifest()[slug];
-    return entry ? `/covers/${entry.filename}` : undefined;
+    return entry ? urlFor(entry) : undefined;
 }
 export function getCoverMap() {
     const manifest = readManifest();
-    return Object.fromEntries(Object.entries(manifest).map(([slug, entry]) => [slug, `/covers/${entry.filename}`]));
+    return Object.fromEntries(Object.entries(manifest).map(([slug, entry]) => [slug, urlFor(entry)]));
 }
 export function saveCover(slug, ext, data) {
     ensureDir();
@@ -42,9 +48,10 @@ export function saveCover(slug, ext, data) {
     }
     const filename = `${slug}.${ext}`;
     fs.writeFileSync(path.join(COVERS_DIR, filename), data);
-    manifest[slug] = { filename, updatedAt: new Date().toISOString() };
+    const entry = { filename, updatedAt: new Date().toISOString() };
+    manifest[slug] = entry;
     writeManifest(manifest);
-    return `/covers/${filename}`;
+    return urlFor(entry);
 }
 export function deleteCover(slug) {
     const manifest = readManifest();
