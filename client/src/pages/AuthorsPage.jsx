@@ -6,6 +6,8 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyState from "@/components/EmptyState";
+import Reveal from "@/components/motion/Reveal";
+import ScrambleText from "@/components/motion/ScrambleText";
 
 export default function AuthorsPage() {
   useDocumentTitle("Authors");
@@ -39,10 +41,12 @@ export default function AuthorsPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-16">
-      <h1 className="font-display font-black text-4xl text-ink text-center">Authors</h1>
+      <ScrambleText as="h1" className="font-display font-black text-4xl text-ink text-center">
+        Authors
+      </ScrambleText>
 
       <div className="mt-8 max-w-2xl mx-auto">
-        <div className="relative flex items-center border-b border-line">
+        <div className="group relative flex items-center border-b border-line">
           <Search className="h-4 w-4 text-line shrink-0" aria-hidden="true" />
           <Input
             value={q}
@@ -51,6 +55,10 @@ export default function AuthorsPage() {
             className="border-none shadow-none bg-transparent font-body text-lg text-ink placeholder:text-line focus-visible:ring-0 px-3 h-auto"
           />
           <ArrowRight className="h-4 w-4 text-ink shrink-0" aria-hidden="true" />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-center scale-x-0 bg-rust transition-transform duration-300 ease-out group-focus-within:scale-x-100"
+          />
         </div>
       </div>
       <p className="mt-3 text-center font-mono text-xs uppercase tracking-wider text-line">
@@ -60,7 +68,7 @@ export default function AuthorsPage() {
       {filtered.length === 0 ? (
         <EmptyState icon={UserX} title="No authors found" description="Try a different search term." />
       ) : (
-        <div className="mt-10 divide-y divide-line/30">
+        <Reveal key={q} as="div" variant="slide-up" stagger amount={0.03} className="mt-10 divide-y divide-line/30">
           {filtered.map((author) => (
             <Link
               key={author.id}
@@ -71,7 +79,7 @@ export default function AuthorsPage() {
               <span className="text-rust">&rarr;</span>
             </Link>
           ))}
-        </div>
+        </Reveal>
       )}
     </main>
   );

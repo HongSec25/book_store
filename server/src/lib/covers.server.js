@@ -1,67 +1,100 @@
 import fs from "fs";
 import path from "path";
-// Shared with the old Next app's public/covers directory (repo root), since
-// this is a monorepo — avoids duplicating the actual cover image files.
+import { adminDb } from "#lib/firebase/admin";
+import { cloudinary } from "#lib/cloudinary";
+
+// Two sources, merged. Legacy local manifest: git-committed seed/demo covers
+// under public/covers — already durable since they ship with the repo, no
+// need to touch anything external for these. Firestore + Cloudinary: real
+// admin uploads, which is the part that wasn't durable before — a bare
+// fs.writeFileSync into the container's local filesystem doesn't survive a
+// redeploy/restart on hosts like Render, which is exactly how previously
+// uploaded covers were disappearing. Firestore entries win on a slug
+// conflict, since they're always the more recent, real upload.
 const COVERS_DIR = path.join(process.cwd(), "..", "public", "covers");
-const MANIFEST_PATH = path.join(COVERS_DIR, "manifest.json");
-function ensureDir() {
-    if (!fs.existsSync(COVERS_DIR))
-        fs.mkdirSync(COVERS_DIR, { recursive: true });
+const LEGACY_MANIFEST_PATH = path.join(COVERS_DIR, "manifest.json");
+
+function readLegacyManifest() {
+  if (!fs.existsSync(LEGACY_MANIFEST_PATH)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(LEGACY_MANIFEST_PATH, "utf-8"));
+  } catch {
+    return {};
+  }
 }
-function readManifest() {
-    ensureDir();
-    if (!fs.existsSync(MANIFEST_PATH))
-        return {};
-    try {
-        return JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf-8"));
-    }
-    catch {
-        return {};
-    }
+function legacyUrlFor(entry) {
+  return `/covers/${entry.filename}?v=${encodeURIComponent(entry.updatedAt)}`;
 }
-function writeManifest(manifest) {
-    ensureDir();
-    fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
-}
-// updatedAt is appended as a cache-busting query param — the filename alone
-// doesn't change when a cover is re-uploaded, so without this, browsers keep
-// serving their previously cached image at that same URL indefinitely.
+
+const manifestCollection = () => adminDb.collection("coverManifest");
+
+// updatedAt is appended as a cache-busting query param on top of Cloudinary's
+// own version segment — belt and suspenders so a browser that already has
+// the old image cached doesn't keep serving it after a re-upload.
 function urlFor(entry) {
-    return `/covers/${entry.filename}?v=${encodeURIComponent(entry.updatedAt)}`;
+  return `${entry.url}?v=${encodeURIComponent(entry.updatedAt)}`;
 }
-export function getCoverUrl(slug) {
-    const entry = readManifest()[slug];
-    return entry ? urlFor(entry) : undefined;
+
+function uploadBuffer(buffer, options) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
+      if (error) reject(error);
+      else resolve(result);
+    });
+    stream.end(buffer);
+  });
 }
-export function getCoverMap() {
-    const manifest = readManifest();
-    return Object.fromEntries(Object.entries(manifest).map(([slug, entry]) => [slug, urlFor(entry)]));
+
+export async function getCoverUrl(slug) {
+  const doc = await manifestCollection().doc(slug).get();
+  if (doc.exists) return urlFor(doc.data());
+  const legacy = readLegacyManifest()[slug];
+  return legacy ? legacyUrlFor(legacy) : undefined;
 }
-export function saveCover(slug, ext, data) {
-    ensureDir();
-    const manifest = readManifest();
-    const previous = manifest[slug];
-    if (previous && previous.filename !== `${slug}.${ext}`) {
-        const oldPath = path.join(COVERS_DIR, previous.filename);
-        if (fs.existsSync(oldPath))
-            fs.unlinkSync(oldPath);
-    }
-    const filename = `${slug}.${ext}`;
-    fs.writeFileSync(path.join(COVERS_DIR, filename), data);
-    const entry = { filename, updatedAt: new Date().toISOString() };
-    manifest[slug] = entry;
-    writeManifest(manifest);
-    return urlFor(entry);
+
+export async function getCoverMap() {
+  const map = {};
+  for (const [slug, entry] of Object.entries(readLegacyManifest())) {
+    map[slug] = legacyUrlFor(entry);
+  }
+  const snap = await manifestCollection().get();
+  snap.forEach((doc) => {
+    map[doc.id] = urlFor(doc.data());
+  });
+  return map;
 }
-export function deleteCover(slug) {
-    const manifest = readManifest();
-    const entry = manifest[slug];
-    if (!entry)
-        return false;
-    const filePath = path.join(COVERS_DIR, entry.filename);
-    if (fs.existsSync(filePath))
-        fs.unlinkSync(filePath);
-    delete manifest[slug];
-    writeManifest(manifest);
-    return true;
+
+export async function saveCover(slug, _ext, data) {
+  // A stable public_id per slug (not per extension) means re-uploading in a
+  // different format just overwrites the same asset in place — no leftover
+  // orphaned file from the old extension to separately track and delete,
+  // unlike the old bucket-path-per-filename approach.
+  const result = await uploadBuffer(data, {
+    public_id: `covers/${slug}`,
+    overwrite: true,
+    invalidate: true,
+    resource_type: "image",
+  });
+
+  const entry = {
+    publicId: result.public_id,
+    url: result.secure_url,
+    updatedAt: new Date().toISOString(),
+  };
+  await manifestCollection().doc(slug).set(entry);
+  return urlFor(entry);
+}
+
+export async function deleteCover(slug) {
+  const docRef = manifestCollection().doc(slug);
+  const doc = await docRef.get();
+  if (!doc.exists) return false;
+  const { publicId } = doc.data();
+  if (publicId) {
+    await cloudinary.uploader.destroy(publicId).catch((err) => {
+      console.error("Cloudinary delete failed:", err);
+    });
+  }
+  await docRef.delete();
+  return true;
 }

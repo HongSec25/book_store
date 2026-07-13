@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import PageTransition from "@/components/motion/PageTransition";
 
 export default function SiteChrome({ children }) {
   const { pathname } = useLocation();
@@ -15,7 +16,9 @@ export default function SiteChrome({ children }) {
   return (
     <div className="min-h-screen flex flex-col">
       <Nav />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        <PageTransition key={pathname}>{children}</PageTransition>
+      </main>
       <Footer />
     </div>
   );

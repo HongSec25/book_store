@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { useCatalog } from "@/hooks/useCatalog";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import Reveal from "@/components/motion/Reveal";
+import ScrambleText from "@/components/motion/ScrambleText";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ImprintsPage() {
@@ -28,12 +30,19 @@ export default function ImprintsPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-16">
-      <h1 className="font-display font-black text-4xl text-ink text-center">Imprints</h1>
-      <p className="mt-3 text-center font-mono text-xs uppercase tracking-wider text-line">
+      <ScrambleText as="h1" className="font-display font-black text-4xl text-ink text-center">
+        Imprints
+      </ScrambleText>
+      <Reveal
+        as="p"
+        variant="fade"
+        delay={0.1}
+        className="mt-3 text-center font-mono text-xs uppercase tracking-wider text-line"
+      >
         Something for every kind of reader.
-      </p>
+      </Reveal>
 
-      <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Reveal as="div" variant="slide-up" stagger amount={0.06} className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {data.imprints.map((imprint) => (
           <Link
             key={imprint.id}
@@ -49,7 +58,7 @@ export default function ImprintsPage() {
             <p className="mt-2 font-body text-sm text-ink/70">{imprint.blurb}</p>
           </Link>
         ))}
-      </div>
+      </Reveal>
     </main>
   );
 }

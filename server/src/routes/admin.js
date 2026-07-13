@@ -92,9 +92,20 @@ adminRouter.post("/admin/books", requireStaff, upload.single("cover"), async (re
   };
 
   await createBook(book);
-  if (req.file) saveCover(slug, req.file.mimetype.split("/")[1], req.file.buffer);
+  let coverError;
+  if (req.file) {
+    try {
+      await saveCover(slug, req.file.mimetype.split("/")[1], req.file.buffer);
+    } catch (err) {
+      // The book itself is already saved — don't discard it just because
+      // the cover upload failed (e.g. Storage misconfigured). Surface it
+      // as a warning instead of a hard failure.
+      console.error("Cover upload failed:", err);
+      coverError = "Book saved, but the cover image failed to upload.";
+    }
+  }
   await logAudit(req.user, "book.create", { type: "book", id: book.id, label: book.title });
-  res.json({ book });
+  res.json({ book, ...(coverError && { coverError }) });
 });
 
 adminRouter.put("/admin/books/:id", requireStaff, upload.single("cover"), async (req, res) => {
@@ -122,9 +133,17 @@ adminRouter.put("/admin/books/:id", requireStaff, upload.single("cover"), async 
   };
 
   await updateBook(id, book);
-  if (req.file) saveCover(book.slug, req.file.mimetype.split("/")[1], req.file.buffer);
+  let coverError;
+  if (req.file) {
+    try {
+      await saveCover(book.slug, req.file.mimetype.split("/")[1], req.file.buffer);
+    } catch (err) {
+      console.error("Cover upload failed:", err);
+      coverError = "Book saved, but the cover image failed to upload.";
+    }
+  }
   await logAudit(req.user, "book.update", { type: "book", id: book.id, label: book.title });
-  res.json({ book });
+  res.json({ book, ...(coverError && { coverError }) });
 });
 
 adminRouter.delete("/admin/books/:id", requireStaff, async (req, res) => {
@@ -503,6 +522,6 @@ adminRouter.post("/admin/covers", requireStaff, upload.single("file"), async (re
   const slug = String(req.body?.slug ?? "").trim();
   if (!slug) return res.status(400).json({ error: "Missing slug." });
   const ext = req.file.mimetype.split("/")[1];
-  const url = saveCover(slug, ext, req.file.buffer);
+  const url = await saveCover(slug, ext, req.file.buffer);
   res.json({ url });
 });

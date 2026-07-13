@@ -7,6 +7,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import CoverArt from "@/components/CoverArt";
 import EmptyState from "@/components/EmptyState";
+import FadeImage from "@/components/FadeImage";
 import { formatDual } from "@/lib/currency";
 
 export default function CartPage() {
@@ -44,9 +45,9 @@ export default function CartPage() {
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <Link to={`/books/${item.slug}`} className="shrink-0">
-                        <div className="h-20 w-14 overflow-hidden rounded-sm border border-border shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md">
+                        <div className="h-20 w-14 overflow-hidden rounded-sm border border-border bg-muted shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-md">
                           {coverUrl ? (
-                            <img src={coverUrl} alt={`Cover of ${item.title}`} className="h-full w-full object-cover" />
+                            <FadeImage src={coverUrl} alt={`Cover of ${item.title}`} className="h-full w-full object-cover" />
                           ) : (
                             <CoverArt
                               book={{

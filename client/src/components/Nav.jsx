@@ -1,10 +1,12 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingCart, User, Menu, X, ChevronDown, Sun, Moon } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { useCatalog } from "@/hooks/useCatalog";
 import { useTheme } from "@/lib/theme-context";
 import { Badge } from "@/components/ui/badge";
+import Collapse from "@/components/motion/Collapse";
+import { gsap, prefersReducedMotion } from "@/lib/motion";
 
 export default function Nav() {
   const { count } = useCart();
@@ -12,7 +14,10 @@ export default function Nav() {
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [booksMenuOpen, setBooksMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const closeTimer = useRef(null);
+  const cartIconRef = useRef(null);
+  const prevCountRef = useRef(count);
   const imprints = data?.imprints ?? [];
   const collections = data?.collections ?? [];
 
@@ -24,8 +29,36 @@ export default function Nav() {
     closeTimer.current = setTimeout(() => setBooksMenuOpen(false), 150);
   }
 
+  // Adds a blur/shadow to the header once the page has scrolled past the
+  // very top, so it reads as "floating" over content instead of a flat bar
+  // that's indistinguishable from the hero underneath it.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Punches the cart icon and pops its badge whenever an item is added
+  // (count goes up) — a quick, cheap way to confirm "yes, that worked"
+  // without a full toast being the only feedback.
+  useEffect(() => {
+    if (count > prevCountRef.current && cartIconRef.current && !prefersReducedMotion()) {
+      gsap.fromTo(
+        cartIconRef.current,
+        { scale: 1 },
+        { scale: 1.3, duration: 0.15, ease: "power2.out", yoyo: true, repeat: 1 }
+      );
+    }
+    prevCountRef.current = count;
+  }, [count]);
+
   return (
-    <header className="relative border-b border-line bg-parchment">
+    <header
+      className={`sticky top-0 z-40 border-b transition-[background-color,box-shadow,border-color] duration-300 ${
+        scrolled ? "border-line bg-parchment/85 backdrop-blur-sm shadow-sm" : "border-transparent bg-parchment"
+      }`}
+    >
       <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
         <Link
           to="/"
@@ -76,9 +109,11 @@ export default function Nav() {
             aria-label="Cart"
             className="relative text-ink hover:text-rust focus:outline-none focus-visible:ring-2 focus-visible:ring-rust rounded-sm"
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart ref={cartIconRef} className="h-5 w-5" />
             {count > 0 && (
-              <Badge className="absolute -top-2 -right-2 h-4 min-w-4 px-1 justify-center text-[10px]">{count}</Badge>
+              <Badge className="absolute -top-2 -right-2 h-4 min-w-4 px-1 justify-center text-[10px] animate-fade-up">
+                {count}
+              </Badge>
             )}
           </Link>
           <button
@@ -92,9 +127,8 @@ export default function Nav() {
         </div>
       </div>
 
-      {booksMenuOpen && (
+      <Collapse open={booksMenuOpen} className="absolute inset-x-0 top-full z-50 border-t border-line bg-parchment shadow-xl">
         <div
-          className="absolute inset-x-0 top-full z-50 border-t border-line bg-parchment shadow-xl"
           onMouseEnter={openBooksMenu}
           onMouseLeave={scheduleCloseBooksMenu}
         >
@@ -151,10 +185,10 @@ export default function Nav() {
             )}
           </div>
         </div>
-      )}
+      </Collapse>
 
-      {mobileOpen && (
-        <nav className="md:hidden border-t border-line bg-parchment px-6 py-4 flex flex-col gap-3 font-mono text-xs uppercase tracking-wider">
+      <Collapse open={mobileOpen} className="md:hidden border-t border-line bg-parchment">
+        <nav className="px-6 py-4 flex flex-col gap-3 font-mono text-xs uppercase tracking-wider">
           <Link to="/books" onClick={() => setMobileOpen(false)} className="text-ink hover:text-rust">
             Books
           </Link>
@@ -171,7 +205,7 @@ export default function Nav() {
             About
           </Link>
         </nav>
-      )}
+      </Collapse>
     </header>
   );
 }

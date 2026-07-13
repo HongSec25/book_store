@@ -7,10 +7,11 @@ import { useCovers } from "@/hooks/useCovers";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { apiFetch } from "@/lib/api";
-import CoverArt from "@/components/CoverArt";
 import AddToCartForm from "@/components/AddToCartForm";
 import BookCard from "@/components/BookCard";
 import EmptyState from "@/components/EmptyState";
+import CoverReveal from "@/components/motion/CoverReveal";
+import Reveal from "@/components/motion/Reveal";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -66,20 +67,15 @@ export default function BookDetailPage() {
       </div>
       <div className="grid md:grid-cols-[280px_1fr] gap-10">
         <div className="md:sticky md:top-6 md:self-start">
-          <div className="aspect-2/3 rounded-sm overflow-hidden shadow-lg">
-            {coverMap[book.slug] ? (
-              <img
-                src={coverMap[book.slug]}
-                alt={`Cover of ${book.title}`}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <CoverArt book={book} />
-            )}
-          </div>
+          <CoverReveal
+            slug={book.slug}
+            book={book}
+            src={coverMap[book.slug]}
+            className="aspect-2/3 rounded-sm overflow-hidden shadow-lg"
+          />
         </div>
 
-        <div>
+        <Reveal variant="slide-up" as="div" duration={0.6} delay={0.15}>
           {imprint && (
             <Link to={`/imprints/${imprint.slug}`} className="font-mono text-xs uppercase tracking-wider text-rust">
               {imprint.name}
@@ -111,7 +107,7 @@ export default function BookDetailPage() {
           </div>
 
           <p className="font-mono text-xs text-muted-foreground mt-6">ISBN {book.isbn}</p>
-        </div>
+        </Reveal>
       </div>
 
       <RelatedBooks book={book} allBooks={data.books} authors={data.authors} imprints={data.imprints} coverMap={coverMap} />
@@ -146,11 +142,11 @@ function RelatedBooks({ book, allBooks, authors, imprints, coverMap }) {
       <h2 className="font-display font-bold text-lg text-ink mb-6">
         {boughtTogether ? "Customers who bought this also bought" : "You might also like"}
       </h2>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
+      <Reveal as="div" variant="slide-up" stagger className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
         {related.map((b) => (
           <BookCard key={b.id} book={b} authors={authors} imprints={imprints} coverUrl={coverMap[b.slug]} fluid />
         ))}
-      </div>
+      </Reveal>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
+import { friendlyAuthError } from "@/lib/firebase/authErrors";
 import { useAuth } from "@/lib/auth-context";
 import { apiFetch } from "@/lib/api";
 import { CAMBODIA_PROVINCES, citiesForProvince } from "@/lib/cambodia-locations";
@@ -54,8 +55,7 @@ export default function RegisterPage() {
       await refresh();
       navigate("/account");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Registration failed.";
-      setError(message.replace("Firebase: ", "").replace(/\s*\(auth\/.*\)\.?/, "."));
+      setError(friendlyAuthError(err, "Registration failed."));
     } finally {
       setPending(false);
     }

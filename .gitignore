@@ -39,6 +39,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# firebase CLI local cache — deploy hashes, not meaningful config
+.firebase/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

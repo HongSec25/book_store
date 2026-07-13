@@ -6,6 +6,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import BookCard from "@/components/BookCard";
 import EmptyState from "@/components/EmptyState";
 import { BookGridSkeleton } from "@/components/BookCardSkeleton";
+import Reveal from "@/components/motion/Reveal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ImprintDetailPage() {
@@ -54,25 +55,27 @@ export default function ImprintDetailPage() {
         </Link>
       </div>
 
-      <div
-        className="h-16 w-16 rounded-full mb-4"
-        style={{ backgroundColor: imprint.color }}
-        aria-hidden="true"
-      />
-      <h1 className="font-display font-black text-4xl text-ink">{imprint.name}</h1>
-      <p className="mt-2 font-body text-ink/70 max-w-xl">{imprint.blurb}</p>
-      <p className="mt-4 font-mono text-xs uppercase tracking-wider text-line">{books.length} books</p>
+      <Reveal as="div" variant="slide-up">
+        <div
+          className="h-16 w-16 rounded-full mb-4"
+          style={{ backgroundColor: imprint.color }}
+          aria-hidden="true"
+        />
+        <h1 className="font-display font-black text-4xl text-ink">{imprint.name}</h1>
+        <p className="mt-2 font-body text-ink/70 max-w-xl">{imprint.blurb}</p>
+        <p className="mt-4 font-mono text-xs uppercase tracking-wider text-line">{books.length} books</p>
+      </Reveal>
 
       {books.length === 0 ? (
         <div className="mt-10">
           <EmptyState icon={BookX} title="No books yet" description="Check back soon for titles from this imprint." />
         </div>
       ) : (
-        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+        <Reveal as="div" variant="slide-up" stagger amount={0.04} className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
           {books.map((book) => (
             <BookCard key={book.id} book={book} authors={data.authors} imprints={data.imprints} coverUrl={coverMap[book.slug]} fluid />
           ))}
-        </div>
+        </Reveal>
       )}
     </main>
   );

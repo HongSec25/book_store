@@ -6,6 +6,8 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import BookCard from "@/components/BookCard";
 import { BookGridSkeleton } from "@/components/BookCardSkeleton";
 import EmptyState from "@/components/EmptyState";
+import Reveal from "@/components/motion/Reveal";
+import ScrambleText from "@/components/motion/ScrambleText";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -129,10 +131,12 @@ export default function BooksPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
-      <h1 className="font-display font-black text-4xl text-ink text-center">Books</h1>
+      <ScrambleText as="h1" className="font-display font-black text-4xl text-ink text-center">
+        Books
+      </ScrambleText>
 
       <div className="mt-8 max-w-2xl mx-auto">
-        <div className="relative flex items-center border-b border-line">
+        <div className="group relative flex items-center border-b border-line">
           <Search className="h-4 w-4 text-line shrink-0" aria-hidden="true" />
           <Input
             value={q}
@@ -141,6 +145,10 @@ export default function BooksPage() {
             className="border-none shadow-none bg-transparent font-body text-lg text-ink placeholder:text-line focus-visible:ring-0 px-3 h-auto"
           />
           <ArrowRight className="h-4 w-4 text-ink shrink-0" aria-hidden="true" />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-center scale-x-0 bg-rust transition-transform duration-300 ease-out group-focus-within:scale-x-100"
+          />
         </div>
       </div>
       <p className="mt-3 text-center font-mono text-xs uppercase tracking-wider text-line">
@@ -233,11 +241,19 @@ export default function BooksPage() {
           {pageBooks.length === 0 ? (
             <EmptyState icon={SearchX} title="No books match those filters" description="Try a different search term or clear a filter." />
           ) : (
-            <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+            <Reveal
+              key={`${currentPage}-${q}-${imprintId}-${genreId}-${sort}`}
+              as="div"
+              variant="slide-up"
+              stagger
+              amount={0.04}
+              duration={0.6}
+              className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4"
+            >
               {pageBooks.map((book) => (
                 <BookCard key={book.id} book={book} authors={authors} imprints={imprints} coverUrl={coverMap[book.slug]} fluid />
               ))}
-            </div>
+            </Reveal>
           )}
 
           {totalPages > 1 && (

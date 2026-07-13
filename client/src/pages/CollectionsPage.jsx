@@ -6,6 +6,9 @@ import { useCovers } from "@/hooks/useCovers";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import CoverArt from "@/components/CoverArt";
 import EmptyState from "@/components/EmptyState";
+import FadeImage from "@/components/FadeImage";
+import Reveal from "@/components/motion/Reveal";
+import ScrambleText from "@/components/motion/ScrambleText";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -27,11 +30,11 @@ function CollectionCoverStack({ books, coverMap }) {
         return (
           <div
             key={book.id}
-            className="absolute top-0 h-20 w-14 overflow-hidden rounded-sm border border-line/40 shadow-sm"
+            className="absolute top-0 h-20 w-14 overflow-hidden rounded-sm border border-line/40 bg-line/10 shadow-sm"
             style={{ left: layout.x, zIndex: layout.z, transform: `rotate(${layout.rotate}deg)` }}
           >
             {coverUrl ? (
-              <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+              <FadeImage src={coverUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               <CoverArt book={book} />
             )}
@@ -75,13 +78,20 @@ export default function CollectionsPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="font-display font-black text-4xl text-ink text-center">Collections</h1>
-      <p className="mt-3 text-center font-mono text-xs uppercase tracking-wider text-line">
+      <ScrambleText as="h1" className="font-display font-black text-4xl text-ink text-center">
+        Collections
+      </ScrambleText>
+      <Reveal
+        as="p"
+        variant="fade"
+        delay={0.1}
+        className="mt-3 text-center font-mono text-xs uppercase tracking-wider text-line"
+      >
         Stories grouped by instinct, not genre.
-      </p>
+      </Reveal>
 
       <div className="mt-8 max-w-xl mx-auto">
-        <div className="relative flex items-center border-b border-line">
+        <div className="group relative flex items-center border-b border-line">
           <Search className="h-4 w-4 text-line shrink-0" aria-hidden="true" />
           <Input
             value={q}
@@ -90,6 +100,10 @@ export default function CollectionsPage() {
             className="border-none shadow-none bg-transparent font-body text-lg text-ink placeholder:text-line focus-visible:ring-0 px-3 h-auto"
           />
           <ArrowRight className="h-4 w-4 text-ink shrink-0" aria-hidden="true" />
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 -bottom-px h-0.5 origin-center scale-x-0 bg-rust transition-transform duration-300 ease-out group-focus-within:scale-x-100"
+          />
         </div>
       </div>
       <p className="mt-3 text-center font-mono text-xs uppercase tracking-wider text-line">
@@ -99,7 +113,7 @@ export default function CollectionsPage() {
       {filtered.length === 0 ? (
         <EmptyState icon={FolderSearch} title="No collections found" description="Try a different search term." />
       ) : (
-        <div className="mt-10 divide-y divide-line/30">
+        <Reveal key={q} as="div" variant="slide-up" stagger amount={0.06} className="mt-10 divide-y divide-line/30">
           {filtered.map((collection) => {
             const books = data.books.filter((b) => collection.curatedBookIds.includes(b.id));
             return (
@@ -119,7 +133,7 @@ export default function CollectionsPage() {
               </Link>
             );
           })}
-        </div>
+        </Reveal>
       )}
     </main>
   );

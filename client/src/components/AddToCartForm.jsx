@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Minus, Plus } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { useMagnetic } from "@/hooks/useMagnetic";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDual, formatUSD } from "@/lib/currency";
@@ -10,6 +11,7 @@ export default function AddToCartForm({ book }) {
   const { addItem } = useCart();
   const [formatType, setFormatType] = useState(book.formats[0]?.type ?? "ebook");
   const [quantity, setQuantity] = useState(1);
+  const magneticRef = useMagnetic({ strength: 0.3 });
 
   if (book.formats.length === 0) {
     return <p className="text-sm text-muted-foreground">Currently out of print.</p>;
@@ -84,7 +86,12 @@ export default function AddToCartForm({ book }) {
           </Button>
         </div>
 
-        <Button onClick={handleAdd} disabled={selected.stockCount === 0}>
+        <Button
+          ref={magneticRef}
+          onClick={handleAdd}
+          disabled={selected.stockCount === 0}
+          className="transition-transform duration-150 hover:-translate-y-0.5 active:scale-95 active:translate-y-0"
+        >
           Add to cart
         </Button>
       </div>

@@ -6,6 +6,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import BookCard from "@/components/BookCard";
 import EmptyState from "@/components/EmptyState";
 import { BookGridSkeleton } from "@/components/BookCardSkeleton";
+import Reveal from "@/components/motion/Reveal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AuthorDetailPage() {
@@ -53,19 +54,21 @@ export default function AuthorDetailPage() {
         </Link>
       </div>
 
-      <h1 className="font-display font-black text-4xl text-ink">{author.name}</h1>
-      {author.bio && <p className="mt-4 font-body text-ink/80 max-w-2xl">{author.bio}</p>}
+      <Reveal as="div" variant="slide-up">
+        <h1 className="font-display font-black text-4xl text-ink">{author.name}</h1>
+        {author.bio && <p className="mt-4 font-body text-ink/80 max-w-2xl">{author.bio}</p>}
+      </Reveal>
 
       {books.length === 0 ? (
         <div className="mt-10">
           <EmptyState icon={BookX} title="No books yet" description="Check back soon for titles from this author." />
         </div>
       ) : (
-        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
+        <Reveal as="div" variant="slide-up" stagger amount={0.04} className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
           {books.map((book) => (
             <BookCard key={book.id} book={book} authors={data.authors} imprints={data.imprints} coverUrl={coverMap[book.slug]} fluid />
           ))}
-        </div>
+        </Reveal>
       )}
     </main>
   );

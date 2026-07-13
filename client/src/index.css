@@ -119,20 +119,28 @@
     display: none;
   }
   .animate-hero-scatter {
-    z-index: var(--z, 1);
     transform: var(--card-rotate, rotate(0deg));
     animation:
       hero-enter 700ms ease-out backwards,
       hero-float 6s ease-in-out infinite;
   }
-  /* Hovering lifts the card straight up and away from the cascade (instead of
-     zooming/z-jumping in place) so it never ends up covering a neighbor.
-     z-index must be set here (not as an inline style) so this :hover rule
-     can actually win the cascade over the base z-index. */
   .animate-hero-scatter:hover {
-    z-index: 30;
     --hover-lift: 18px;
     --hover-scale: 1.05;
+  }
+  /* The draggable outer wrapper's own stacking order (split out from
+     .animate-hero-scatter above, which now only owns the float/rotate
+     transform — that class lives on the inner card so drag's x/y transform
+     on the outer wrapper never fights it for control of `transform`).
+     Hovering lifts the card to the very front of the whole stack instead of
+     zooming/z-jumping in place, so it never ends up covered by a neighbor.
+     z-index must be set here (not as an inline style) so this :hover rule
+     can actually win the cascade over the base z-index. */
+  .hero-card-slot {
+    z-index: var(--z, 1);
+  }
+  .hero-card-slot:hover {
+    z-index: 30;
   }
 }
 
@@ -171,6 +179,9 @@
   .animate-fade-up {
     animation: fade-up 500ms ease-out backwards;
   }
+  .animate-ghost-flicker {
+    animation: ghost-flicker 4s ease-in-out infinite;
+  }
 }
 
 @keyframes fade-up {
@@ -181,6 +192,35 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Irregular opacity dips (not a smooth sine wave) so it reads as a
+   flickering apparition rather than a steady pulse/breathing animation. */
+@keyframes ghost-flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  4% {
+    opacity: 0.35;
+  }
+  8% {
+    opacity: 1;
+  }
+  52% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.5;
+  }
+  58% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.3;
+  }
+  64% {
+    opacity: 1;
   }
 }
 

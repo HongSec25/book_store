@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
+import { friendlyAuthError } from "@/lib/firebase/authErrors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,11 +29,10 @@ export default function ForgotPasswordPage({ loginPath = "/account/login" }) {
       // in newer SDK versions when email enumeration protection is on, but
       // older/misconfigured projects can still leak it — normalize either way
       // so we never confirm or deny whether an email has an account.
-      const message = err instanceof Error ? err.message : "Something went wrong.";
-      if (message.includes("auth/user-not-found") || message.includes("auth/invalid-email")) {
+      if (err?.code === "auth/user-not-found" || err?.code === "auth/invalid-email") {
         setSent(true);
       } else {
-        setError(message.replace("Firebase: ", "").replace(/\s*\(auth\/.*\)\.?/, "."));
+        setError(friendlyAuthError(err));
       }
     } finally {
       setPending(false);

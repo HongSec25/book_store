@@ -102,11 +102,19 @@ function BookFormInner({ book, pending, setPending, navigate, mode, id }) {
     if (cover && cover.size > 0) payload.set("cover", cover);
 
     try {
-      await apiFetch(mode === "edit" ? `/api/admin/books/${id}` : "/api/admin/books", {
+      const result = await apiFetch(mode === "edit" ? `/api/admin/books/${id}` : "/api/admin/books", {
         method: mode === "edit" ? "PUT" : "POST",
         body: payload,
       });
-      toast.success(mode === "edit" ? "Book updated" : "Book created");
+      // The book itself always saves even if the cover upload specifically
+      // failed (e.g. Storage misconfigured) — surface that distinctly
+      // instead of a blanket success, since it otherwise looks like nothing
+      // went wrong until the cover turns up missing later.
+      if (result?.coverError) {
+        toast.warning(result.coverError);
+      } else {
+        toast.success(mode === "edit" ? "Book updated" : "Book created");
+      }
       // The storefront's useCatalog() lives under a separate ["catalog"]
       // query key with its own staleTime — without this, a new/edited book
       // won't show up on the customer-facing site until that cache expires

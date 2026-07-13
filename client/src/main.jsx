@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/lib/auth-context'
 import { CartProvider } from '@/lib/cart-context'
 import { ThemeProvider } from '@/lib/theme-context'
+import { BookTransitionProvider } from '@/lib/book-transition-context'
 import './index.css'
 import App from './App.jsx'
 
@@ -18,8 +19,10 @@ createRoot(document.getElementById('root')).render(
         <BrowserRouter>
           <AuthProvider>
             <CartProvider>
-              <App />
-              <Toaster />
+              <BookTransitionProvider>
+                <App />
+                <Toaster />
+              </BookTransitionProvider>
             </CartProvider>
           </AuthProvider>
         </BrowserRouter>
