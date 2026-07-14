@@ -94,16 +94,17 @@ export default function CoverArt({ book }) {
             el.style.strokeDasharray = length;
             el.style.strokeDashoffset = length;
         });
-        gsap.set(fillEls, { opacity: 0 });
+        if (fillEls.length) gsap.set(fillEls, { opacity: 0 });
 
         const tl = gsap.timeline({
             scrollTrigger: { trigger: svg, start: "top 85%", once: true },
         });
-        tl.to(strokeEls, { strokeDashoffset: 0, duration: 1, ease: "power2.out", stagger: 0.15 }, 0).to(
-            fillEls,
-            { opacity: 1, duration: 0.5, ease: "power1.out", stagger: 0.04 },
-            0.15
-        );
+        if (strokeEls.length) {
+            tl.to(strokeEls, { strokeDashoffset: 0, duration: 1, ease: "power2.out", stagger: 0.15 }, 0);
+        }
+        if (fillEls.length) {
+            tl.to(fillEls, { opacity: 1, duration: 0.5, ease: "power1.out", stagger: 0.04 }, 0.15);
+        }
 
         return () => tl.scrollTrigger?.kill();
     }, [book.id]);
