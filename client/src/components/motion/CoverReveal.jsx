@@ -25,6 +25,13 @@ export default function CoverReveal({ slug, book, src, className }) {
     const box = boxRef.current;
     if (!box) return undefined;
 
+    // PageTransition also resets scroll on route change, but layout effects
+    // fire child-before-parent, so its reset would run after we've already
+    // measured `target` below — reset here first so the target rect is
+    // relative to the page's resting scroll position, not wherever the
+    // visitor happened to be scrolled to when they clicked.
+    window.scrollTo({ top: 0, behavior: "instant" });
+
     const clone = document.createElement("img");
     clone.src = pending.src;
     clone.alt = "";
