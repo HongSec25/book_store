@@ -79,6 +79,7 @@ export async function sendOrderConfirmationEmail(order) {
     `);
     await sendEmail(order.customerEmail, `Order confirmed — #${order.id.slice(0, 8)}`, html);
 }
+
 export async function sendOrderStatusUpdateEmail(order, status) {
     const STATUS_MESSAGE = {
         processing: "We're preparing your order.",

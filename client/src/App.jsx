@@ -12,6 +12,7 @@ import AuthorDetailPage from "@/pages/AuthorDetailPage";
 import CollectionsPage from "@/pages/CollectionsPage";
 import CollectionDetailPage from "@/pages/CollectionDetailPage";
 import AboutPage from "@/pages/AboutPage";
+import ContactPage from "@/pages/ContactPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import CartPage from "@/pages/CartPage";
 import CheckoutPage from "@/pages/checkout/CheckoutPage";
@@ -63,6 +64,7 @@ function App() {
         <Route path="/collections" element={<CollectionsPage />} />
         <Route path="/collections/:slug" element={<CollectionDetailPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/account/login" element={<CustomerLoginPage />} />
         <Route path="/account/register" element={<RegisterPage />} />
